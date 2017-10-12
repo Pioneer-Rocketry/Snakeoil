@@ -13,5 +13,3 @@
 7. As a user, I need the system to send the current rocket status to me, so that I can monitor its status
 
 8. As a rocket, I need a failsafe, so that the spinning mass does not destroy the rocket. 
-
-9. 
