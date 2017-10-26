@@ -40,7 +40,16 @@ AbstractServo::AbstractServo(int low, int high, int pin, float rangeMin, float r
   armTime = 0;
 
   currentPower = 0;
-  
+
+  isAccelerating = false;
+
+  accelRate = 0.0f;
+
+  maxPercent = 0;
+
+  minPercent = 0;
+
+  rangeLimitSet = false;
 }
 
 void AbstractServo::setIs3DMotor(bool is3D)
@@ -53,14 +62,16 @@ void AbstractServo::setIs3DMotor(bool is3D)
 void AbstractServo::update()
 {
 
-  noInterrupts();
-  if(enabled)
-  {
-    arming = false;
-    
-    int range = highMicroseconds - lowMicroseconds;
 
-    int totPower = 0;
+  arming = false;
+    
+  int range = highMicroseconds - lowMicroseconds;
+
+  int totPower = 0;
+
+  noInterrupts();
+  if(enabled && !isAccelerating)
+  {
 
     if(is3DMotor)
     {
@@ -70,8 +81,6 @@ void AbstractServo::update()
     {
       totPower = (int)(lowMicroseconds + range * ((float)currentPower/(float)highRange));
     }
-
-    Serial.println(totPower);
      
     if(newVal && totPower != oldPower)
     {
@@ -81,6 +90,39 @@ void AbstractServo::update()
     }
     
   }
+  else if(enabled && isAccelerating)
+  {
+    long delta = millis() - lastTime;
+
+    currentPower += accelRate * (delta/1000.0f);
+
+    if(currentPower > maxPercent)
+      currentPower = maxPercent;
+    else if(currentPower < minPercent)
+      currentPower = minPercent;
+  
+    if(is3DMotor)
+    {
+      totPower = (int)(lowMicroseconds + (float)range/(float)2 + ((float)range/(float)2 * currentPower/(float)highRange));
+    }
+    else
+    {
+      totPower = (int)(lowMicroseconds + range * ((float)currentPower/(float)highRange));
+    }
+
+    if(totPower > highMicroseconds)
+      totPower = highMicroseconds;
+    else if(totPower < lowMicroseconds)
+      totPower = lowMicroseconds;
+
+    Serial.print("Cur Power: ");
+    Serial.println(totPower);
+
+    servoObj.writeMicroseconds(totPower);
+    oldPower = totPower;
+    newVal = false;
+   
+  }
   else
   {
    //Do nothing. 
@@ -88,8 +130,18 @@ void AbstractServo::update()
   
   interrupts();
   
+  lastTime = millis();
+}
+
+void AbstractServo::setPercentLimits(float min, float max)
+{
+
+  rangeLimitSet = true;
+  maxPercent = max;
+  minPercent = min;
   
 }
+
 
 /*Allow the servo to take commands*/
 void AbstractServo::enable()
@@ -97,10 +149,6 @@ void AbstractServo::enable()
  
   servoObj.attach(motorPin);
   servoObj.writeMicroseconds(lowMicroseconds);
-
-  Serial.print("Servo: ");
-
-  Serial.print(motorPin);
 
   arming = true;
 
@@ -142,6 +190,14 @@ void AbstractServo::setPower(float p)
     newVal = true;
     //Serial.println(currentPower);
  
+  
+}
+
+void AbstractServo::setAcceleration(float a)
+{
+
+  isAccelerating = true;
+  accelRate = a;  
   
 }
 

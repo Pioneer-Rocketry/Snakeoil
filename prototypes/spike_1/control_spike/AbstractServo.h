@@ -33,11 +33,14 @@ public:
 	/*Set the power using a float between the min and max values.*/
 	void setPower(float p);
 
+  void setAcceleration(float a);
 
 	/*Set the location relative to the craft*/
 	void setLocation(point p);
 
 	point getLocation();
+
+  void setPercentLimits(float min, float max);
 
 	void setRotationDirection(rotDirection d){direction = d;}
 
@@ -51,7 +54,13 @@ private:
 
 	float lowRange, highRange;
 
+  float maxPercent, minPercent;
+
 	int motorPin;
+
+  float accelRate;
+
+  bool isAccelerating;
 
 	bool enabled;
 
@@ -71,11 +80,13 @@ private:
 
 	rotDirection direction;
 
-        int oldPower = 0;
+  int oldPower = 0;
 
-        bool newVal = true;
+  bool newVal = true;
 
   bool is3DMotor = false;
+
+  bool rangeLimitSet = false;
 
 
 };

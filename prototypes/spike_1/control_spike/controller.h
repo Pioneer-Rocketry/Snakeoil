@@ -36,13 +36,13 @@ public:
 	void disableSetpointLimits(){setpointLimitsSet = false;}
 
 	/*Sets the proportional tuning parameter*/
-	void setP(float prop){Pval = prop;}
+	void setP(float prop);
 
 	/*Sets the integral tuning parameter*/
-	void setI(float inti){Ival = inti;}
+	void setI(float inti);
 	
 	/*Sets the derivative tuning parameter*/
-	void setD(float dir){Dval = dir;}
+	void setD(float dir);
 
 	/*Preload a value into the actual proportional error value*/
 	void preloadP(float prop){curProp = prop;}
@@ -54,11 +54,13 @@ public:
 	void preloadD(float dir){curDir = dir;}
 
 	/*Get the output of the control loop*/
-	float getOutput();
+  float getOutput();
 
 private:
 
-	float Pval, Ival, Dval;
+	float Pval;
+	float Ival;
+	float Dval;
 
   float anotherVal;
 

@@ -20,6 +20,8 @@ Controller::Controller()
 	Dval = 0;
   curProp = 0;
   lastError = 0;
+
+
 }
 
 /*Basic setup*/
@@ -30,7 +32,7 @@ void Controller::init(float PParam, float IParam, float DParam)
 	Dval = DParam;
 	Ival = IParam;
 
- 
+  setpointLimitsSet = false;
 
 }
 
@@ -80,7 +82,7 @@ void Controller::setSetpoint(float p)
 	else if(setpointLimitsSet && p > maxSet)
 		p = maxSet;
 
-	curSetpoint = p;
+	Controller::curSetpoint = p;
 
 }
 
@@ -88,25 +90,45 @@ void Controller::setSetpoint(float p)
 void Controller::applySetpointLimits(float max, float min)
 {
 
-
 	maxSet = max;
 
 	minSet = min;
 
 	setpointLimitsSet = true;
 
-
 }
+
+/*Sets the proportional tuning parameter*/
+void Controller::setP(float prop)
+{
+  Pval = prop;
+}
+
+/*Sets the integral tuning parameter*/
+void Controller::setI(float inti)
+{
+  Ival = inti;
+}
+  
+/*Sets the derivative tuning parameter*/
+void Controller::setD(float dir)
+{
+  Dval = dir;
+}
+
+
 
 /*Get the output of the control loop*/
 float Controller::getOutput()
 {
 
-  float rawOut = curProp * Controller::Pval + curInti * Controller::Ival + curDir * Controller::Dval;
+  float rawOut = curProp * Pval + curInti * Ival + curDir * Dval;
 
-  if(rawOut > maxSet)
+  Serial1.println(rawOut);
+
+  if(rawOut > maxSet && setpointLimitsSet)
     rawOut = maxSet;
-	else if(rawOut < minSet)
+	else if(rawOut < minSet && setpointLimitsSet)
     rawOut = minSet;
     
 	return rawOut;
